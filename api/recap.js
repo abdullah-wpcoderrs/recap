@@ -1,3 +1,4 @@
+console.log("Bearer exists:", !!process.env.X_BEARER_TOKEN);
 export default async function handler(req, res) {
     console.log('API called for:', req.query.username);
     
