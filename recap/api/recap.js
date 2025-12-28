@@ -1,7 +1,12 @@
 export default async function handler(req, res) {
     // Set CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    
+    // Handle OPTIONS preflight
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
     
     // Set caching headers (1 hour)
     res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate');
@@ -43,8 +48,12 @@ export default async function handler(req, res) {
         );
         
         if (!userResponse.ok) {
-            if (userResponse.status === 404) {
-                return res.status(404).json({ error: 'User not found' });
+            if (userResponse.status === 401) {
+                return res.status(401).json({ error: 'Invalid API token' });
+            } else if (userResponse.status === 403) {
+                return res.status(403).json({ error: 'API permission denied' });
+            } else if (userResponse.status === 404) {
+                return res.status(404).json({ error: `User @${username} not found` });
             } else if (userResponse.status === 429) {
                 return res.status(429).json({ error: 'Rate limit exceeded' });
             }
@@ -139,8 +148,7 @@ export default async function handler(req, res) {
                 avgLikes: 0,
                 bestMonth: 'No tweets in 2025',
                 longestStreak: 0,
-                topTweets: [],
-                monthlyEngagement: {}
+                topTweets: []
             });
         }
         
@@ -181,7 +189,6 @@ export default async function handler(req, res) {
             
             // Track month for "best month" calculation
             const tweetDate = new Date(tweet.created_at);
-            const yearMonth = `${tweetDate.getUTCFullYear()}-${String(tweetDate.getUTCMonth() + 1).padStart(2, '0')}`;
             const monthName = tweetDate.toLocaleDateString('en-US', { month: 'long' });
             
             if (!monthlyEngagement[monthName]) {
@@ -193,4 +200,79 @@ export default async function handler(req, res) {
             }
             
             monthlyEngagement[monthName].count++;
-            monthlyEngagement[month
+            monthlyEngagement[monthName].engagement += tweetEngagement;
+            
+            // Add date for streak calculation (UTC date only)
+            const utcDate = tweet.created_at.split('T')[0];
+            tweetDates.push(utcDate);
+        });
+        
+        // Calculate average likes per tweet
+        const avgLikes = totalTweets > 0 ? totalLikes / totalTweets : 0;
+        
+        // Find best month by engagement
+        let bestMonth = 'No tweets';
+        let maxEngagement = 0;
+        
+        for (const [monthName, data] of Object.entries(monthlyEngagement)) {
+            if (data.engagement > maxEngagement) {
+                maxEngagement = data.engagement;
+                bestMonth = monthName;
+            }
+        }
+        
+        // Calculate longest streak
+        const uniqueDates = [...new Set(tweetDates)].sort();
+        let longestStreak = 0;
+        
+        if (uniqueDates.length > 0) {
+            let currentStreak = 1;
+            longestStreak = 1;
+            
+            for (let i = 1; i < uniqueDates.length; i++) {
+                const prevDate = new Date(uniqueDates[i - 1]);
+                const currDate = new Date(uniqueDates[i]);
+                
+                // Calculate difference in days
+                const diffTime = currDate - prevDate;
+                const diffDays = diffTime / (1000 * 60 * 60 * 24);
+                
+                if (diffDays === 1) {
+                    currentStreak++;
+                    longestStreak = Math.max(longestStreak, currentStreak);
+                } else if (diffDays > 1) {
+                    currentStreak = 1;
+                }
+            }
+        }
+        
+        // Get top 5 tweets by engagement
+        const topTweets = [...allTweets]
+            .sort((a, b) => b.engagementScore - a.engagementScore)
+            .slice(0, 5)
+            .map(tweet => ({
+                id: tweet.id,
+                text: tweet.text,
+                created_at: tweet.created_at,
+                public_metrics: tweet.public_metrics,
+                engagementScore: tweet.engagementScore
+            }));
+        
+        // Return the recap data
+        return res.json({
+            totalTweets,
+            totalEngagement,
+            avgLikes: parseFloat(avgLikes.toFixed(1)),
+            bestMonth,
+            longestStreak,
+            topTweets,
+            monthlyEngagement
+        });
+        
+    } catch (error) {
+        console.error('Unexpected error:', error);
+        return res.status(500).json({ 
+            error: `Internal server error: ${error.message}` 
+        });
+    }
+}
