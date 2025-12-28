@@ -1,0 +1,18 @@
+{
+  "name": "x-2025-recap",
+  "version": "1.0.0",
+  "description": "A simple website to show your X activity summary for 2025",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "vercel build",
+    "deploy": "vercel"
+  },
+  "keywords": ["x", "twitter", "recap", "analytics", "vercel"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "vercel": "^33.0.0"
+  }
+}
