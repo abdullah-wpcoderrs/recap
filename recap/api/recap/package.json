@@ -4,14 +4,23 @@
   "description": "A simple website to show your X activity summary for 2025",
   "main": "index.html",
   "scripts": {
-    "dev": "vercel dev",
+    "dev": "node server.js",
+    "dev:vercel": "vercel dev",
     "build": "vercel build",
     "deploy": "vercel"
   },
-  "keywords": ["x", "twitter", "recap", "analytics", "vercel"],
+  "keywords": [
+    "x",
+    "twitter",
+    "recap",
+    "analytics",
+    "vercel"
+  ],
   "author": "",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "dotenv": "^16.6.1"
+  },
   "devDependencies": {
     "vercel": "^33.0.0"
   }
