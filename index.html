@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X 2025 Recap</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fab fa-twitter"></i> X 2025 Recap</h1>
+            <p class="subtitle">See your X activity summary for 2025</p>
+        </header>
+
+        <main>
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="username">Enter X Username (without @)</label>
+                    <div class="input-wrapper">
+                        <span class="input-prefix">@</span>
+                        <input 
+                            type="text" 
+                            id="username" 
+                            placeholder="username"
+                            maxlength="15"
+                            autocomplete="off"
+                        >
+                        <button id="getRecap" class="btn-primary">
+                            <i class="fas fa-chart-bar"></i> Generate Recap
+                        </button>
+                    </div>
+                    <p class="input-hint">Only letters, numbers, and underscores allowed</p>
+                </div>
+            </div>
+
+            <div id="loading" class="loading-container hidden">
+                <div class="spinner"></div>
+                <p>Analyzing your 2025 X activity...</p>
+                <p class="loading-details">Fetching tweets and calculating metrics</p>
+            </div>
+
+            <div id="error" class="error-container hidden">
+                <div class="error-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3>Oops! Something went wrong</h3>
+                <p id="error-message"></p>
+                <button id="try-again" class="btn-secondary">Try Again</button>
+            </div>
+
+            <div id="results" class="hidden">
+                <div class="results-header">
+                    <h2><span id="results-username"></span>'s 2025 Recap</h2>
+                    <button id="copy-recap" class="btn-secondary">
+                        <i class="fas fa-copy"></i> Copy Recap
+                    </button>
+                </div>
+
+                <div class="summary-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-tweets">0</div>
+                        <div class="stat-label">Total Tweets</div>
+                        <div class="stat-icon">
+                            <i class="fas fa-feather-alt"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-engagement">0</div>
+                        <div class="stat-label">Total Engagement</div>
+                        <div class="stat-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="avg-likes">0</div>
+                        <div class="stat-label">Avg Likes/Tweet</div>
+                        <div class="stat-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="best-month">--</div>
+                        <div class="stat-label">Best Month</div>
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-star"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3><i class="fas fa-crown"></i> Top 5 Tweets</h3>
+                    <div id="top-tweets" class="tweets-container">
+                        <!-- Top tweets will be inserted here -->
+                    </div>
+                </div>
+
+                <div class="metrics-row">
+                    <div class="metric-card">
+                        <h4><i class="fas fa-fire"></i> Longest Streak</h4>
+                        <div class="metric-value" id="longest-streak">0 days</div>
+                        <div class="metric-description">Consecutive days with at least 1 tweet</div>
+                    </div>
+                    <div class="metric-card">
+                        <h4><i class="fas fa-quote-right"></i> Shareable Summary</h4>
+                        <p id="summary-sentence" class="summary-sentence">Your 2025 recap will appear here</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>This tool analyzes your public X activity from 2025. Data is cached for 1 hour.</p>
+            <p class="footer-note">Not affiliated with X Corp. Uses the X API v2.</p>
+        </footer>
+    </div>
+
+    <div id="toast" class="toast hidden">Recap copied to clipboard!</div>
+
+    <script src="app.js"></script>
+</body>
+</html>
