@@ -506,3 +506,71 @@ footer {
         gap: 15px;
     }
 }
+/* OAuth Section Styles */
+.oauth-section {
+    background: linear-gradient(135deg, #1da1f2 0%, #0d8bd9 100%);
+    color: white;
+    padding: 40px;
+    border-radius: var(--radius);
+    text-align: center;
+    box-shadow: var(--shadow);
+}
+
+.oauth-section h3 {
+    font-size: 1.6rem;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.oauth-description {
+    margin-bottom: 25px;
+    opacity: 0.95;
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.btn-oauth {
+    background: white;
+    color: var(--primary);
+    border: none;
+    padding: 18px 35px;
+    border-radius: var(--radius);
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin-bottom: 20px;
+}
+
+.btn-oauth:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    background: #f8f9fa;
+}
+
+.btn-oauth:active {
+    transform: translateY(-1px);
+}
+
+.privacy-note {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* Update existing input-section */
+.input-section {
+    background: white;
+    padding: 20px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 30px;
+}

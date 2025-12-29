@@ -1,6 +1,5 @@
 // DOM Elements
-const usernameInput = document.getElementById('username');
-const getRecapBtn = document.getElementById('getRecap');
+const connectXBtn = document.getElementById('connectX');
 const loadingDiv = document.getElementById('loading');
 const errorDiv = document.getElementById('error');
 const errorMessage = document.getElementById('error-message');
@@ -22,11 +21,6 @@ const topTweetsContainer = document.getElementById('top-tweets');
 // Format number with commas
 function formatNumber(num) {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-}
-
-// Validate username (letters, numbers, underscore only)
-function validateUsername(username) {
-    return /^[a-zA-Z0-9_]{1,15}$/.test(username);
 }
 
 // Show error message
@@ -204,83 +198,71 @@ Generated via X 2025 Recap Tool`;
     }
 }
 
-// Main function to fetch recap data
-async function fetchRecapData(username) {
-    showLoading();
+// Check for OAuth results on page load
+function checkForOAuthResults() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const results = urlParams.get('results');
+    const error = urlParams.get('error');
     
-    try {
-        const response = await fetch(`/api/recap?username=${encodeURIComponent(username)}`);
-        
-        if (!response.ok) {
-            if (response.status === 404) {
-                throw new Error('User not found. Please check the username and try again.');
-            } else if (response.status === 429) {
-                throw new Error('Rate limit exceeded. Please try again in a few minutes.');
-            } else if (response.status >= 500) {
-                throw new Error('X API is currently unavailable. Please try again later.');
-            } else {
-                throw new Error(`API error: ${response.status} ${response.statusText}`);
-            }
+    if (error) {
+        showError(decodeURIComponent(error));
+        // Clean URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+        return;
+    }
+    
+    if (results) {
+        try {
+            // Decode base64url manually since Buffer isn't available in browsers
+            const data = JSON.parse(atob(results.replace(/-/g, '+').replace(/_/g, '/')));
+            displayOAuthResults(data);
+            // Clean URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+        } catch (err) {
+            console.error('Failed to parse OAuth results:', err);
+            showError('Failed to process authentication results');
         }
-        
-        const data = await response.json();
-        
-        if (data.error) {
-            throw new Error(data.error);
-        }
-        
-        // Update UI with data
-        resultsUsername.textContent = username;
-        totalTweetsEl.textContent = formatNumber(data.totalTweets);
-        totalEngagementEl.textContent = formatNumber(data.totalEngagement);
-        avgLikesEl.textContent = Math.round(data.avgLikes).toLocaleString();
-        bestMonthEl.textContent = data.bestMonth;
-        longestStreakEl.textContent = `${data.longestStreak} days`;
-        
-        // Generate and set summary sentence
-        const summarySentence = generateSummarySentence(data, username);
-        summarySentenceEl.textContent = summarySentence;
-        
-        // Render top tweets
-        renderTopTweets(data.topTweets);
-        
-        // Store data for copying
-        copyRecapBtn.dataset.recapData = JSON.stringify(data);
-        copyRecapBtn.dataset.username = username;
-        
-        showResults();
-    } catch (error) {
-        console.error('Error fetching recap:', error);
-        showError(error.message || 'Failed to fetch recap data. Please try again.');
     }
 }
 
-// Event Listeners
-getRecapBtn.addEventListener('click', async () => {
-    const username = usernameInput.value.trim();
+// Display OAuth results
+function displayOAuthResults(data) {
+    // Update UI with data
+    resultsUsername.textContent = data.username;
+    totalTweetsEl.textContent = formatNumber(data.totalTweets);
+    totalEngagementEl.textContent = formatNumber(data.totalEngagement);
+    avgLikesEl.textContent = Math.round(data.avgLikes).toLocaleString();
+    bestMonthEl.textContent = data.bestMonth;
+    longestStreakEl.textContent = `${data.longestStreak} days`;
     
-    if (!username) {
-        showError('Please enter a username');
-        return;
-    }
+    // Generate and set summary sentence
+    const summarySentence = generateSummarySentence(data, data.username);
+    summarySentenceEl.textContent = summarySentence;
     
-    if (!validateUsername(username)) {
-        showError('Username can only contain letters, numbers, and underscores (max 15 characters)');
-        return;
-    }
+    // Render top tweets
+    renderTopTweets(data.topTweets);
     
-    await fetchRecapData(username);
-});
+    // Store data for copying
+    copyRecapBtn.dataset.recapData = JSON.stringify(data);
+    copyRecapBtn.dataset.username = data.username;
+    
+    showResults();
+}
 
-usernameInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        getRecapBtn.click();
-    }
-});
+// Handle OAuth login
+function handleOAuthLogin() {
+    showLoading();
+    window.location.href = '/api/auth/login';
+}
+
+// Event Listeners
+// OAuth login button
+if (connectXBtn) {
+    connectXBtn.addEventListener('click', handleOAuthLogin);
+}
 
 tryAgainBtn.addEventListener('click', () => {
     errorDiv.classList.add('hidden');
-    usernameInput.focus();
 });
 
 copyRecapBtn.addEventListener('click', async () => {
@@ -293,4 +275,4 @@ copyRecapBtn.addEventListener('click', async () => {
 });
 
 // Initialize
-usernameInput.focus();
+checkForOAuthResults();

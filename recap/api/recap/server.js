@@ -1,12 +1,12 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const url = require('url');
+// Removed deprecated url module - using URL constructor instead
 
 // Load environment variables from .env file
 require('dotenv').config();
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // MIME types for different file extensions
 const mimeTypes = {
@@ -22,7 +22,7 @@ const mimeTypes = {
 };
 
 const server = http.createServer(async (req, res) => {
-  const parsedUrl = url.parse(req.url, true);
+  const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
   const pathname = parsedUrl.pathname;
 
   // Enable CORS
@@ -50,7 +50,7 @@ const server = http.createServer(async (req, res) => {
         const mockReq = {
           method: req.method,
           url: req.url,
-          query: parsedUrl.query,
+          query: Object.fromEntries(parsedUrl.searchParams),
           headers: req.headers
         };
         
@@ -65,6 +65,17 @@ const server = http.createServer(async (req, res) => {
           },
           setHeader: (name, value) => {
             res.setHeader(name, value);
+          },
+          redirect: (statusCode, url) => {
+            // Handle both redirect(url) and redirect(statusCode, url)
+            if (typeof statusCode === 'string') {
+              res.statusCode = 302;
+              res.setHeader('Location', statusCode);
+            } else {
+              res.statusCode = statusCode || 302;
+              res.setHeader('Location', url);
+            }
+            res.end();
           },
           end: () => {
             res.end();
@@ -111,5 +122,17 @@ server.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
   console.log(`📁 Serving files from: ${__dirname}`);
   console.log(`🔧 API endpoints available at /api/*`);
-  console.log('\n💡 To test the API, visit: http://localhost:3000/api/recap?username=elonmusk');
+  console.log(`\n💡 To test the API, visit: http://localhost:${PORT}/api/recap?username=elonmusk`);
+}).on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.log(`❌ Port ${PORT} is already in use. Trying port ${PORT + 1}...`);
+    server.listen(PORT + 1, () => {
+      console.log(`🚀 Server running at http://localhost:${PORT + 1}`);
+      console.log(`📁 Serving files from: ${__dirname}`);
+      console.log(`🔧 API endpoints available at /api/*`);
+      console.log(`\n💡 To test the API, visit: http://localhost:${PORT + 1}/api/recap?username=elonmusk`);
+    });
+  } else {
+    console.error('Server error:', err);
+  }
 });
