@@ -1,4 +1,15 @@
 {
+  "version": 2,
+  "name": "x-2025-recap-oauth",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "."
+      }
+    }
+  ],
   "functions": {
     "api/auth/login.js": {
       "maxDuration": 10
@@ -7,8 +18,18 @@
       "maxDuration": 30
     }
   },
-  "rewrites": [
-    { "source": "/api/auth/login", "destination": "/api/auth/login.js" },
-    { "source": "/api/auth/callback", "destination": "/api/auth/callback.js" }
+  "routes": [
+    {
+      "src": "/api/auth/login",
+      "dest": "/api/auth/login.js"
+    },
+    {
+      "src": "/api/auth/callback",
+      "dest": "/api/auth/callback.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
   ]
 }
